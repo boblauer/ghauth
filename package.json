@@ -1,0 +1,22 @@
+{
+  "name": "ghauth",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/boblauer/ghauth.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/boblauer/ghauth/issues"
+  },
+  "homepage": "https://github.com/boblauer/ghauth#readme",
+  "dependencies": {
+    "express": "^4.15.0"
+  }
+}
