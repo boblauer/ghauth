@@ -75,10 +75,9 @@ app.post('/hook',
   (req, res) => {
     if (!req.isXHubValid()) return res.status(404).send();
 
-    console.log(req.body);
+    var room = req.body.repository.full_name;
+    var payload = req.body;
 
-    var room = 'ifit/ifit'; // get room from req object
-    var payload = { data: true }; // get data from req object.
     io.sockets.in(room).emit('message', payload);
 
     res.status(204).send();
