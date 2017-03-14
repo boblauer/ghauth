@@ -14,9 +14,7 @@ var clientSecret = process.env.ghsecret;
 var webHookSecret = process.env.ghsecret;
 
 io.sockets.on('connection', (socket) => {
-  console.log('socket connected!');
   socket.on('room', (room) => {
-    console.log('socked joined room', room);
     socket.join(room);
   });
 });
@@ -44,39 +42,46 @@ app.get('/', (req, res) => {
   });
 });
 
-app.post('/subscribe', bodyParser.json(), (req, res) => {
-  let repo = req.body.repo;
-  let token = req.body.token;
+app.post('/subscribe',
+  bodyParser.json(),
+  (req, res) => {
+    let repo = req.body.repo;
+    let token = req.body.token;
 
-  var fullUrl = req.protocol + '://' + req.get('host') + '/hook';
+    var fullUrl = req.protocol + '://' + req.get('host') + '/hook';
 
-  request.post({
-    url: `https://api.github.com/repos/${repo}/hooks`,
-    headers: {
-      Authorization: `token ${token}`,
-      'User-Agent': 'User boblauer, Application GitHub Event Stream'
-    },
-    json: {
-      name: 'web',
-      active: true,
-      events: ['*'],
-      config: {
-        url: fullUrl,
-        content_type: 'json',
-        secret: webHookSecret
+    request.post({
+      url: `https://api.github.com/repos/${repo}/hooks`,
+      headers: {
+        Authorization: `token ${token}`,
+        'User-Agent': 'User boblauer, Application GitHub Event Stream'
+      },
+      json: {
+        name: 'web',
+        active: true,
+        events: ['*'],
+        config: {
+          url: fullUrl,
+          content_type: 'json',
+          secret: webHookSecret
+        }
       }
-    }
-  }).pipe(res);
+    }).pipe(res);
 });
 
-app.post('/hook', xhub({ algorithm: 'sha1', secret: webHookSecret }), (req, res) => {
-  if (!req.isXHubValid()) return res.status(404).send();
+app.post('/hook',
+  xhub({ algorithm: 'sha1', secret: webHookSecret }),
+  bodyParser.json(),
+  (req, res) => {
+    if (!req.isXHubValid()) return res.status(404).send();
 
-  var room = 'ifit/ifit'; // get room from req object
-  var payload = { data: true }; // get data from req object.
-  io.sockets.in(room).emit('message', payload);
+    console.log(req.body);
 
-  res.status(204).send();
+    var room = 'ifit/ifit'; // get room from req object
+    var payload = { data: true }; // get data from req object.
+    io.sockets.in(room).emit('message', payload);
+
+    res.status(204).send();
 });
 
 server.listen(app.get('port'), () => console.log(`Node app is running on port: ${app.get('port')}`));
