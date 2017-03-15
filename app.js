@@ -1,5 +1,6 @@
 'use strict';
 
+var opbeat = require('opbeat').start()
 var app = require('express')();
 var server = require('http').createServer(app);
 var io = require('socket.io')(server);
@@ -26,6 +27,8 @@ io.sockets.on('connection', (socket) => {
 });
 
 app.set('port', (process.env.PORT || 5000));
+
+app.use(opbeat.middleware.express());
 
 app.get('/', (req, res) => {
   if (!req.query.code) return res.send('missing code');
