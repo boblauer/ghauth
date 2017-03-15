@@ -5,7 +5,8 @@
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node app.js"
+    "start": "node app.js",
+    "log": "heroku logs --app secret-taiga-24486 --tail"
   },
   "repository": {
     "type": "git",
