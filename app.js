@@ -75,7 +75,7 @@ app.post('/hook',
     if (!req.isXHubValid()) return res.status(404).send();
 
     const payload = req.body;
-    payload.eventType = res.headers['X-GitHub-Event'] || 'unknown';
+    payload.eventType = req.header('X-GitHub-Event') || 'unknown';
 
     io.sockets.in(req.body.repository.full_name).emit('message', payload);
     res.status(204).send();
