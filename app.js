@@ -3,7 +3,6 @@
 var app = require('express')();
 var server = require('http').createServer(app);
 var io = require('socket.io')(server);
-
 var request = require('request');
 var bodyParser = require('body-parser');
 var xhub = require('express-x-hub');
@@ -75,11 +74,7 @@ app.post('/hook',
   (req, res) => {
     if (!req.isXHubValid()) return res.status(404).send();
 
-    var room = req.body.repository.full_name;
-    var payload = req.body;
-
-    io.sockets.in(room).emit('message', payload);
-
+    io.sockets.in(req.body.repository.full_name).emit('message', req.body);
     res.status(204).send();
 });
 
