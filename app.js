@@ -7,6 +7,7 @@ var request = require('request');
 var bodyParser = require('body-parser');
 var xhub = require('express-x-hub');
 var querystring = require('querystring');
+var Promise = require('bluebird');
 
 var clientId = 'cd02dc9c9a0783ffb9f7';
 var clientSecret = process.env.ghsecret;
@@ -14,7 +15,13 @@ var webHookSecret = process.env.ghsecret;
 
 io.sockets.on('connection', (socket) => {
   socket.on('room', (room) => {
+    console.log('socket joining', room);
     socket.join(room);
+  });
+
+  socket.on('leave', (room) => {
+    console.log('socket leaving', room);
+    socket.leave(room);
   });
 });
 
@@ -43,29 +50,39 @@ app.get('/', (req, res) => {
 
 app.post('/subscribe',
   bodyParser.json(),
-  (req, res) => {
-    let repo = req.body.repo;
+  (req, res, next) => {
+    let repos = req.body.repos;
     let token = req.body.token;
 
-    var fullUrl = req.protocol + '://' + req.get('host') + '/hook';
+    Promise.map(repos, (repo) => {
+      var fullUrl = req.protocol + '://' + req.get('host') + '/hook';
 
-    request.post({
-      url: `https://api.github.com/repos/${repo}/hooks`,
-      headers: {
-        Authorization: `token ${token}`,
-        'User-Agent': 'User boblauer, Application GitHub Event Stream'
-      },
-      json: {
-        name: 'web',
-        active: true,
-        events: ['*'],
-        config: {
-          url: fullUrl,
-          content_type: 'json',
-          secret: webHookSecret
+      return request.post({
+        url: `https://api.github.com/repos/${repo}/hooks`,
+        headers: {
+          Authorization: `token ${token}`,
+          'User-Agent': 'User boblauer, Application GitHub Event Stream'
+        },
+        json: {
+          name: 'web',
+          active: true,
+          events: ['*'],
+          config: {
+            url: fullUrl,
+            content_type: 'json',
+            secret: webHookSecret
+          }
         }
-      }
-    }).pipe(res);
+      })
+      .catch((err) => {
+        if (err.errors && err.errors[0].message === 'Hook already exists on this repository') return;
+        throw err;
+      });
+    })
+      .then(() => {
+        res.status(204).send();
+      })
+      .catch(next);
 });
 
 app.post('/hook',
