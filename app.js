@@ -75,7 +75,7 @@ app.post('/subscribe',
         }
       })
       .catch((res) => {
-        console.log('subscribe error', res.err);
+        console.log('subscribe error', Object.keys(res), res);
         if (res.err && res.err.errors && res.err.errors[0].message === 'Hook already exists on this repository') return;
 
         console.log('throwing :(');
